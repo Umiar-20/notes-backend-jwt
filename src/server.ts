@@ -1,8 +1,21 @@
 import express from "express";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
+import { User } from "../models/user.schema";
 
 dotenv.config();
+
+// koneksi mongodb
+mongoose
+  .connect(process.env.MONGO_URI as string)
+  .then(() =>
+    console.log("MongoDB Connected yessssssssssssssssssssssssssssssssss")
+  )
+  .catch((error) => {
+    console.log("MongoDB Connection Failed");
+    console.error(error);
+  });
 
 const app = express();
 
@@ -16,14 +29,17 @@ app.post("/register", async (req, res) => {
   // hash password
   const hashingPassword = await bcrypt.hash(password, 13);
 
-  // mock data yang akan dimasukkan ke database
+  // payload
   const newUser = {
     name,
     email,
     password: hashingPassword,
   };
 
-  return res.json({ message: newUser });
+  const newCreatedUser = new User(newUser);
+  const data = await newCreatedUser.save();
+
+  return res.json({ message: "Register Success!!", data: data });
 });
 
 // Proses login

@@ -46,14 +46,19 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  // checking password from login page
-  const checkPassword = await bcrypt.compare(password, "....");
-
-  if (!checkPassword) {
-    return res.status(403).json({ message: "Invalid Credentials" });
+  // input validation
+  if (!email || password.length < 8) {
+    return res.json({
+      message: "email invalid and password must be more than 8 characters!",
+    });
   }
 
-  // authorization with (JWT/session)
+  // find user
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: "user not found!" });
+  }
 });
 
 app.listen(process.env.PORT, () => {

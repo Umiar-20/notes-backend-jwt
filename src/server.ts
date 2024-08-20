@@ -9,6 +9,7 @@ const app = express();
 // untuk membaca json, bersifat WAJIB!!!!
 app.use(express.json());
 
+// Proses register
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -23,6 +24,20 @@ app.post("/register", async (req, res) => {
   };
 
   return res.json({ message: newUser });
+});
+
+// Proses login
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  // checking password from login page
+  const checkPassword = await bcrypt.compare(password, "....");
+
+  if (!checkPassword) {
+    return res.status(403).json({ message: "Invalid Credentials" });
+  }
+
+  // authorization with (JWT/session)
 });
 
 app.listen(process.env.PORT, () => {

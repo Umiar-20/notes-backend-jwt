@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -8,8 +9,9 @@ const app = express();
 // untuk membaca json, bersifat WAJIB!!!!
 app.use(express.json());
 
-app.get("/", (_, res) => {
-  return res.json({ message: "Hello World!" });
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  return res.json({ message: req.body });
 });
 
 app.listen(process.env.PORT, () => {

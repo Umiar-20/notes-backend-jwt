@@ -39,7 +39,7 @@ app.post("/register", async (req, res) => {
   const newCreatedUser = new User(newUser);
   const data = await newCreatedUser.save();
 
-  return res.json({ message: "Register Success!!", data: data });
+  return res.json({ message: "Register Success!!", data });
 });
 
 // Proses login

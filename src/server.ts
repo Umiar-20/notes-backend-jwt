@@ -61,9 +61,20 @@ app.post("/login", async (req, res) => {
     return res.status(404).json({ message: "user not found!" });
   }
 
+  // Authorization
+  const payload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET_TOKEN as string);
+  console.log(token);
+
   return res.status(200).json({ message: "login success!" });
 });
 
+// untuk menjalankan server pada port yang ada dalam env.PORT
 app.listen(process.env.PORT, () => {
   console.log(`Server is runnin at port: ${process.env.PORT}`);
 });

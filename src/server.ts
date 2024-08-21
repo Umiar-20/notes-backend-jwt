@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { User } from "../models/user.schema";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import { Auth } from "../models/auth.schema";
 
 dotenv.config();
 
@@ -30,20 +31,23 @@ app.use(cookieParser());
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
+  // input validation
+
   // hash password
   const hashingPassword = await bcrypt.hash(password, 13);
 
-  // payload
+  // payload untuk menampung sementara data user baru sebelum dimasukkan ke db
   const newUser = {
     name,
     email,
     password: hashingPassword,
   };
 
+  // insert to db
   const newCreatedUser = new User(newUser);
   const data = await newCreatedUser.save();
 
-  return res.json({ message: "Register Success!!", data });
+  return res.status(201).json({ message: "Register Success!!", data });
 });
 
 // Proses login
@@ -57,11 +61,22 @@ app.post("/login", async (req, res) => {
     });
   }
 
-  // find user
+  // find user by email
   const user = await User.findOne({ email });
 
+  // jika user dengan email tidak ada dalam db
   if (!user) {
     return res.status(404).json({ message: "user not found!" });
+  }
+
+  // password validation
+  const isPasswordMatch = await bcrypt.compare(
+    password,
+    user.password as string
+  );
+
+  if (!isPasswordMatch) {
+    return res.status(400).json({ message: "invalid Password!" });
   }
 
   // Authorization
@@ -75,7 +90,7 @@ app.post("/login", async (req, res) => {
     payload,
     process.env.JWT_ACCESS_TOKEN as string,
     {
-      expiresIn: 30,
+      expiresIn: 300,
     }
   ); // token expires in 30 seconds
 
@@ -83,9 +98,15 @@ app.post("/login", async (req, res) => {
     payload,
     process.env.JWT_REFRESH_TOKEN as string,
     {
-      expiresIn: "1d",
+      expiresIn: "3d",
     }
   );
+
+  const newRefreshToken = new Auth({
+    userId: user.id,
+    refreshToken,
+  });
+  await newRefreshToken.save();
 
   return res
     .cookie("accessToken", accessToken, { httpOnly: true })

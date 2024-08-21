@@ -117,23 +117,63 @@ app.post("/login", async (req, res) => {
 
 // Resources Endpoint
 app.get("/resources", async (req, res) => {
-  // console.log(req.cookies);
-  const { accessToken } = req.cookies;
+  const { accessToken, refreshToken } = req.cookies;
 
-  if (!accessToken) {
-    return res.status(401).json({ message: "Unauthorized!" });
+  // checking if token exist
+  if (accessToken) {
+    try {
+      jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN as string);
+      return res.json({ data: "ini datanya....!" });
+    } catch (error) {
+      // if didnt exist then regenrate new access token with refresh token
+      if (!refreshToken) {
+        return res.status(401).json({ message: "please re-login" });
+      }
+
+      try {
+        // check if refresh token valid or not
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN as string);
+        // if valid, verify to db
+        const activeRefreshToken = await Auth.findOne({
+          refreshToken,
+        });
+
+        if (!activeRefreshToken) {
+          return res.status(401).json({ message: "please re-login" });
+        }
+
+        const payload = jwt.decode(refreshToken) as {
+          id: String;
+          name: String;
+          email: String;
+        };
+        console.log(payload);
+
+        const newAccessToken = jwt.sign(
+          {
+            id: payload.id,
+            name: payload.name,
+            email: payload.email,
+          },
+          process.env.JWT_ACCESS_TOKEN as string,
+          { expiresIn: 300 }
+        );
+
+        return res
+          .cookie("accessToken", newAccessToken, { httpOnly: true })
+          .json({ data: "ini datanyaa...!" });
+        // regenerate new refresh token
+      } catch (error) {
+        // if invalid user need to relogin
+
+        return res.status(401).json({ message: "please re-login" });
+      }
+    }
   }
 
-  try {
-    jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN as string);
-    return res.json({ message: "ini datanya....!" });
-  } catch (error) {
-    console.log(error);
+  // if exist then verify access token
 
-    // regenerate refeshToken
-
-    return res.status(401).json({ message: "Unauthorized!" });
-  }
+  // console.log({ accessToken, refreshToken });
 });
 
 // untuk menjalankan server pada port yang ada dalam env.PORT

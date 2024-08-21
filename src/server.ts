@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { User } from "../models/user.schema";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ mongoose
 const app = express();
 // untuk membaca json, bersifat WAJIB!!!!
 app.use(express.json());
+// untuk membaca cookie
+app.use(cookieParser());
 
 // Proses register
 app.post("/register", async (req, res) => {
@@ -93,20 +96,22 @@ app.post("/login", async (req, res) => {
 
 // Resources Endpoint
 app.get("/resources", async (req, res) => {
-  const token = req.headers.authorization;
+  // console.log(req.cookies);
+  const { accessToken } = req.cookies;
 
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized for this data" });
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized!" });
   }
 
-  // pengecekan token yang dikirim oleh user saat login
   try {
-    // apakah token valid
-
-    jwt.verify(token, process.env.JWT_ACCESS_TOKEN as string);
+    jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN as string);
     return res.json({ message: "ini datanya....!" });
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized for this data" });
+    console.log(error);
+
+    // regenerate refeshToken
+
+    return res.status(401).json({ message: "Unauthorized!" });
   }
 });
 

@@ -59,6 +59,8 @@ app.post("/login", async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "user not found!" });
   }
+
+  return res.status(200).json({ message: "login success!" });
 });
 
 app.listen(process.env.PORT, () => {

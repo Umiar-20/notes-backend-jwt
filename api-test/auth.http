@@ -17,3 +17,8 @@ Content-Type: application/json
     "email": "heldianitaaa@gmail.com",
     "password": "G@kpakek1"
 }
+
+
+### akses Resources
+GET http://localhost:2000/resources
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2YzQ2MDViYzdkMmNmMmM3MjM4MTA5YiIsIm5hbWUiOiJoZWxkaWFuaXRhIGFuZGlyYSIsImVtYWlsIjoiaGVsZGlhbml0YWFhQGdtYWlsLmNvbSIsImlhdCI6MTcyNDIwNTM4MywiZXhwIjoxNzI0MjA1NDEzfQ.hlRo38KehHGZsBiP7TjsYcGf8oTf6A3ijILcd7DkP50

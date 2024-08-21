@@ -68,11 +68,30 @@ app.post("/login", async (req, res) => {
     email: user.email,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET_TOKEN as string, {
-    expiresIn: 3600,
-  });
+  const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN as string, {
+    expiresIn: 30,
+  }); // token expires in 30 seconds
 
   return res.status(200).json({ message: "login success!", token });
+});
+
+// Resources Endpoint
+app.get("/resources", async (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized for this data" });
+  }
+
+  // pengecekan token yang dikirim oleh user saat login
+  try {
+    // apakah token valid
+
+    jwt.verify(token, process.env.JWT_ACCESS_TOKEN as string);
+    return res.json({ message: "ini datanya....!" });
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized for this data" });
+  }
 });
 
 // untuk menjalankan server pada port yang ada dalam env.PORT

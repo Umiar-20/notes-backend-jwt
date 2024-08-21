@@ -68,10 +68,11 @@ app.post("/login", async (req, res) => {
     email: user.email,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET_TOKEN as string);
-  console.log(token);
+  const token = jwt.sign(payload, process.env.JWT_SECRET_TOKEN as string, {
+    expiresIn: 3600,
+  });
 
-  return res.status(200).json({ message: "login success!" });
+  return res.status(200).json({ message: "login success!", token });
 });
 
 // untuk menjalankan server pada port yang ada dalam env.PORT

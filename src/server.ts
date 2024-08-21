@@ -68,11 +68,27 @@ app.post("/login", async (req, res) => {
     email: user.email,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN as string, {
-    expiresIn: 30,
-  }); // token expires in 30 seconds
+  const accessToken = jwt.sign(
+    payload,
+    process.env.JWT_ACCESS_TOKEN as string,
+    {
+      expiresIn: 30,
+    }
+  ); // token expires in 30 seconds
 
-  return res.status(200).json({ message: "login success!", token });
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.JWT_REFRESH_TOKEN as string,
+    {
+      expiresIn: "1d",
+    }
+  );
+
+  return res
+    .cookie("accessToken", accessToken, { httpOnly: true })
+    .cookie("refreshToken", refreshToken, { httpOnly: true })
+    .status(200)
+    .json({ message: "login success!" });
 });
 
 // Resources Endpoint

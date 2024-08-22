@@ -1,4 +1,4 @@
-###
+### Read all Notes
 GET http://localhost:2000/notes
 
 ### create a NOte
@@ -7,14 +7,20 @@ Content-Type: application/json
 
 
 {
-    "title": "Selasa malam",
-    "content": "membeli skin vandal"
+    "title": "Minggu sore",
+    "content": "nagih utang ke temen"
 }
 
 
 ### Update a Note
+PATCH http://localhost:2000/notes/66c69469f17d2ea90569725f
+Content-Type: application/json
 
+{
+    "title": "Sabtu Malam",
+    "content": "ngopi dan nugas"
+}
 
 
 ### Delete a Note
-DELETE http://localhost:2000/notes/66c60ba99e5051cff6e4465f
+DELETE http://localhost:2000/notes/

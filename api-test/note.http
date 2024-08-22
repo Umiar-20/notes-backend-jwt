@@ -22,4 +22,4 @@ Content-Type: application/json
 
 
 ### Delete a Note
-DELETE http://localhost:2000/notes/
+DELETE http://localhost:2000/notes/66c6be36940b7708a6df88d1

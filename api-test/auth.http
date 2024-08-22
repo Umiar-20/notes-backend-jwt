@@ -18,6 +18,10 @@ Content-Type: application/json
     "password": "G@kpakek1"
 }
 
+### Logout
+POST http://localhost:2000/logout
 
 ### akses Resources
 GET http://localhost:2000/resources
+
+

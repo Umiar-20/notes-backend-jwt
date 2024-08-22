@@ -2,11 +2,15 @@ import express from "express";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
-import { User } from "../models/user.schema";
+import { User } from "./register/models/user.schema";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-import { Auth } from "../models/auth.schema";
-
+import { Auth } from "./auth/models/auth.schema";
+import { Note } from "./notes/models/note.schema";
+import { registerRouter } from "./register/routes/register.router";
+import { loginRouter } from "./auth/routes/login.router";
+import { logoutRouter } from "./auth/routes/logout.router";
+import { noteRouter } from "./notes/routes/note.router";
 dotenv.config();
 
 // koneksi mongodb
@@ -28,92 +32,16 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Proses register
-app.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
-
-  // input validation
-
-  // hash password
-  const hashingPassword = await bcrypt.hash(password, 13);
-
-  // payload untuk menampung sementara data user baru sebelum dimasukkan ke db
-  const newUser = {
-    name,
-    email,
-    password: hashingPassword,
-  };
-
-  // insert to db
-  const newCreatedUser = new User(newUser);
-  const data = await newCreatedUser.save();
-
-  return res.status(201).json({ message: "Register Success!!", data });
-});
+app.use("/register", registerRouter);
 
 // Proses login
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+app.use("/login", loginRouter);
 
-  // input validation
-  if (!email || password.length < 8) {
-    return res.json({
-      message: "email invalid and password must be more than 8 characters!",
-    });
-  }
+//  Notes
+app.use("/notes", noteRouter);
 
-  // find user by email
-  const user = await User.findOne({ email });
-
-  // jika user dengan email tidak ada dalam db
-  if (!user) {
-    return res.status(404).json({ message: "user not found!" });
-  }
-
-  // password validation
-  const isPasswordMatch = await bcrypt.compare(
-    password,
-    user.password as string
-  );
-
-  if (!isPasswordMatch) {
-    return res.status(400).json({ message: "invalid Password!" });
-  }
-
-  // Authorization
-  const payload = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  };
-
-  const accessToken = jwt.sign(
-    payload,
-    process.env.JWT_ACCESS_TOKEN as string,
-    {
-      expiresIn: 300,
-    }
-  ); // token expires in 30 seconds
-
-  const refreshToken = jwt.sign(
-    payload,
-    process.env.JWT_REFRESH_TOKEN as string,
-    {
-      expiresIn: "3d",
-    }
-  );
-
-  const newRefreshToken = new Auth({
-    userId: user.id,
-    refreshToken,
-  });
-  await newRefreshToken.save();
-
-  return res
-    .cookie("accessToken", accessToken, { httpOnly: true })
-    .cookie("refreshToken", refreshToken, { httpOnly: true })
-    .status(200)
-    .json({ message: "login success!" });
-});
+// Proses logout
+app.use("/logout", logoutRouter);
 
 // Resources Endpoint
 app.get("/resources", async (req, res) => {

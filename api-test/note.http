@@ -5,20 +5,19 @@ GET http://localhost:2000/notes
 POST http://localhost:2000/notes
 Content-Type: application/json
 
-
 {
-    "title": "Minggu sore",
-    "content": "nagih utang ke temen"
+    "title": "malam nanti",
+    "content": "main valoran habis bootcamp"
 }
 
 
 ### Update a Note
-PATCH http://localhost:2000/notes/66c69469f17d2ea90569725f
+PATCH http://localhost:2000/notes/66c6be36940b7708a6df88d1
 Content-Type: application/json
 
 {
-    "title": "Sabtu Malam",
-    "content": "ngopi dan nugas"
+    "title": "malam ini",
+    "content": "main switch bareng isteri"
 }
 
 

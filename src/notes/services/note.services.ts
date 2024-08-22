@@ -83,9 +83,135 @@ const NoteServices = {
     }
   },
 
-  update: async () => {},
+  update: async (
+    noteId: string,
+    title: string,
+    content: string,
+    accessToken: string,
+    refreshToken: string,
+    res: Response
+  ) => {
+    if (!accessToken && !refreshToken) {
+      return res.status(401).json({ message: "Unauthorized, please login" });
+    }
 
-  delete: async () => {},
+    try {
+      jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN as string);
+    } catch (error) {
+      if (!refreshToken) {
+        return res.status(401).json({ message: "Unauthorized, please login" });
+      }
+
+      try {
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN as string);
+        const activeRefreshToken = await Auth.findOne({ refreshToken });
+
+        if (!activeRefreshToken) {
+          return res
+            .status(401)
+            .json({ message: "Unauthorized, please login" });
+        }
+
+        const payload = jwt.decode(refreshToken) as {
+          id: string;
+          name: string;
+          email: string;
+        };
+
+        const newAccessToken = jwt.sign(
+          {
+            id: payload.id,
+            name: payload.name,
+            email: payload.email,
+          },
+          process.env.JWT_ACCESS_TOKEN as string,
+          { expiresIn: 300 }
+        );
+
+        res.cookie("accessToken", newAccessToken, { httpOnly: true });
+      } catch (error) {
+        return res.status(401).json({ message: "Unauthorized, please login" });
+      }
+    }
+
+    try {
+      const updatedNote = await NoteRepository.update(noteId, title, content);
+      return res.json({
+        message: "Note updated successfully",
+        data: updatedNote,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to update note", error });
+    }
+  },
+
+  delete: async (
+    noteId: string,
+    accessToken: string,
+    refreshToken: string,
+    res: Response
+  ) => {
+    if (!accessToken && !refreshToken) {
+      return res.status(401).json({ message: "Unauthorized, please login" });
+    }
+
+    try {
+      jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN as string);
+    } catch (error) {
+      if (!refreshToken) {
+        return res.status(401).json({ message: "Unauthorized, please login" });
+      }
+
+      try {
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN as string);
+        const activeRefreshToken = await Auth.findOne({ refreshToken });
+
+        if (!activeRefreshToken) {
+          return res
+            .status(401)
+            .json({ message: "Unauthorized, please login" });
+        }
+
+        const payload = jwt.decode(refreshToken) as {
+          id: string;
+          name: string;
+          email: string;
+        };
+
+        const newAccessToken = jwt.sign(
+          {
+            id: payload.id,
+            name: payload.name,
+            email: payload.email,
+          },
+          process.env.JWT_ACCESS_TOKEN as string,
+          { expiresIn: 300 }
+        );
+
+        res.cookie("accessToken", newAccessToken, { httpOnly: true });
+
+        // Continue with the delete operation
+        const deleteNote = await NoteRepository.delete(noteId);
+        return res.json({
+          message: "Note deleted successfully",
+          data: deleteNote,
+        });
+      } catch (error) {
+        return res.status(401).json({ message: "Unauthorized, please login" });
+      }
+    }
+
+    // Perform delete operation if accessToken is valid
+    try {
+      const deleteNote = await NoteRepository.delete(noteId);
+      return res.json({
+        message: "Note deleted successfully",
+        data: deleteNote,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to delete note", error });
+    }
+  },
 };
 
 export default NoteServices;
